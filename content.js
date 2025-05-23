@@ -1,9 +1,6 @@
-chrome.storage.local.get("extensionEnabled", (data) => {
-  if (!data.extensionEnabled) {
-    console.log("Extension is OFF");
-    return;
-  }
+let observer = null;
 
+function initializeAdBlocker() {
   class ViewElement {
     constructor() {
       this.element = document.querySelectorAll(
@@ -24,13 +21,12 @@ chrome.storage.local.get("extensionEnabled", (data) => {
     }
   }
 
-  // Adding an mutataion Observer
-
+  // Adding an mutation Observer
   function onMutationObserver() {
     if (!document.body) return;
     let isSelfMutating = false;
 
-    const observer = new MutationObserver((mutationsList) => {
+    observer = new MutationObserver((mutationsList) => {
       if (isSelfMutating) return;
 
       isSelfMutating = true;
@@ -43,21 +39,46 @@ chrome.storage.local.get("extensionEnabled", (data) => {
       subtree: true,
     });
   }
+
   // Main Entry of Script where everything starts
-  (async function () {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", onReady);
+  function onReady() {
+    console.log("Add's Blocker script is starting...");
+    // Remove the Element That contains Add's
+    removeAddElement();
+
+    // Mutation Observer for remove add continuously
+    onMutationObserver();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", onReady);
+  } else {
+    onReady();
+  }
+}
+
+function stopAdBlocker() {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+}
+
+// Listen for toggle messages
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'toggleExtension') {
+    if (message.isEnabled) {
+      initializeAdBlocker();
     } else {
-      onReady();
+      stopAdBlocker();
     }
+  }
+});
 
-    function onReady() {
-      console.log("Add's Blocker script is starting...");
-      // Remove the Element That contains Add's
-      removeAddElement();
-
-      // Mutation Observer for remove add continuously
-      onMutationObserver();
-    }
-  })();
+// Initial check and setup - start enabled by default
+chrome.storage.local.get("extensionEnabled", (data) => {
+  // Initialize if enabled or not set (default to enabled)
+  if (data.extensionEnabled !== false) {
+    initializeAdBlocker();
+  }
 });

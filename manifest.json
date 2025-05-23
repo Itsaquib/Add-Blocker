@@ -6,7 +6,9 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon.png"
+      "16": "./assets/adblock_icon_16.png",
+      "48": "./assets/adblock_icon_48.png",
+      "128": "./assets/adblock_icon_128.png"
     }
   },
   "background": {
@@ -22,8 +24,8 @@
     }
   ],
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "./assets/adblock_icon_16.png",
+    "48": "./assets/adblock_icon_48.png",
+    "128": "./assets/adblock_icon_128.png"
   }
 }
